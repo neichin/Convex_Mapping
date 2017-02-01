@@ -225,8 +225,6 @@ def mapping_Y_axis(X,Y,Pj,mask,field):
                 p00 = p00/Ptot
                 p10 = p10/Ptot
                 
-                print i , newPosJ, newPosNextJ
-                
                 NewField[newPosJ,i]= NewField[newPosJ,i] + field[j,i] * p00
                 NewField[newPosNextJ,i]= NewField[newPosNextJ,i] + field[j,i] * p10
         

@@ -6,6 +6,7 @@ import math
 from Convex_Mapping_lib import *
 
 
+#DATA to play with
 img=np.array(mpimg.imread('/Users/imerino/Desktop/DriveLicense.png')[:,:,0])
 #img=np.ones([8,8])
 
@@ -22,6 +23,8 @@ xMax=img.shape[1]
 yMax=img.shape[0]
 
 
+
+#MASKS definition
 
 mask=np.ones(img.shape)
 
@@ -57,11 +60,13 @@ mask2[:,xMax-20:xMax]=0.
 #mask2[:,xMax-100:xMax]=0.
 
 
+#######
+#########
+###########
+#######
 
 
-mask_Y=mask_change_Y_axis(mask,mask2)
-
-mask_X=mask_change_X_axis(mask,mask2)
+mask_X=mask_change_X_axis(mask,mask2) #Mask_X is a mask accounting for the changes in mask2 relative to mask in X direction
 
 
 LeftWall,LeftWall2,RightWall,RightWall2 =  walls_X_Detection(mask,mask_X)
@@ -73,43 +78,18 @@ Pi=get_translation_X_axis(X,XI1,XI2,Gamma1,Gamma2)
 NewIMG=mapping_X_axis(X,Y,Pi,mask,img)
 
 
-mask_Y=mask_change_Y_axis(mask_X,mask2)
+mask_Y=mask_change_Y_axis(mask_X,mask2)  #Mask_Y is a mask accounting for the changes in mask2 relative to mask in Y direction
 
 UpWall,UpWall2,DownWall,DownWall2 = walls_Y_Detection(mask_X,mask_Y)
-
 Omega1 = get_wall_displacement_Y_axis(UpWall,UpWall2)
 Omega2 = get_wall_displacement_Y_axis(DownWall,DownWall2)
-
 YI1=get_distance_to_wall_up(Y,UpWall)
 YI2=get_distance_to_wall_down(Y,DownWall)
-
 Pj=get_translation_Y_axis(Y,YI1,YI2,Omega1,Omega2)
 
 NewIMG2=mapping_Y_axis(X,Y,Pj,mask_X,NewIMG)
 
 
-#LeftWall,LeftWall2,RightWall,RightWall2 =  walls_X_Detection(mask,mask_X)
-#UpWall,UpWall2,DownWall,DownWall2 = walls_Y_Detection(mask,mask_Y)
-#
-#Gamma1 = get_wall_displacement_X_axis(LeftWall,LeftWall2)
-#Omega1 = get_wall_displacement_Y_axis(UpWall,UpWall2)
-#Gamma2 = get_wall_displacement_X_axis(RightWall,RightWall2)
-#Omega2 = get_wall_displacement_Y_axis(DownWall,DownWall2)
-#
-#
-#XI1=get_distance_to_wall_left(X,LeftWall)
-#XI2=get_distance_to_wall_right(X,RightWall)
-#YI1=get_distance_to_wall_up(Y,UpWall)
-#YI2=get_distance_to_wall_down(Y,DownWall)
-#
-#Pi=get_translation_X_axis(X,XI1,XI2,Gamma1,Gamma2)
-#Pj=get_translation_Y_axis(Y,YI1,YI2,Omega1,Omega2)
-#
-#NewIMG=mapping_X_axis(X,Y,Pi,mask,img)
-#
-#NewIMG2=mapping_Y_axis(X,Y,Pj,mask,NewIMG)
-
-#NewIMG2=mapping_Y_axis(X,Y,Pj,mask,img)
 
 plt.figure()
 imgplot = plt.imshow(img[:,:]*mask,interpolation='nearest')
@@ -117,8 +97,8 @@ imgplot = plt.imshow(img[:,:]*mask,interpolation='nearest')
 plt.figure()
 imgplot = plt.imshow(NewIMG[:,:]*mask_X,interpolation='nearest')
 #
-#plt.figure()
-#imgplot = plt.imshow(NewIMG2[:,:]*mask2,interpolation='nearest')
+plt.figure()
+imgplot = plt.imshow(NewIMG2[:,:]*mask2,interpolation='nearest')
 
 plt.show()
 
