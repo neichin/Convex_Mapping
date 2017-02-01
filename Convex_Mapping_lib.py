@@ -15,8 +15,9 @@ def mask_change_Y_axis(mask,mask2):
     indexWithout=np.where(detect2==0)[0]
     
     for i in indexWithout:
-        indextocopy = np.argmin(np.abs(indexWith - i))
-        maskNew[:,i]=maskNew[:,indexWith[indextocopy]]
+        if i in index[0]:
+            indextocopy = np.argmin(np.abs(indexWith - i))
+            maskNew[:,i]=maskNew[:,indexWith[indextocopy]]
 
     return maskNew
     
@@ -32,8 +33,9 @@ def mask_change_X_axis(mask,mask2):
     indexWithout=np.where(detect2==0)[0]
     
     for j in indexWithout:
-        indextocopy = np.argmin(np.abs(indexWith - j))
-        maskNew[j,:]=maskNew[indexWith[indextocopy],:]
+        if j in index[0]:
+            indextocopy = np.argmin(np.abs(indexWith - j))
+            maskNew[j,:]=maskNew[indexWith[indextocopy],:]
         
     return maskNew
     
@@ -81,6 +83,11 @@ def walls_X_Detection(mask,mask2):
     LeftWall[whereLeft[0],:] = np.tile(whereLeft[1]+1, (xMax,1)).transpose()
     whereRight=np.where(detect==1)
     RightWall[whereRight[0],:] = np.tile(whereRight[1], (xMax,1)).transpose()
+    
+    indexOpenR=np.where(mask[:,xMax-1]!=0)
+    RightWall[indexOpenR[0],:]=xMax-1
+    indexOpenL=np.where(mask[:,0]!=0)
+    LeftWall[indexOpenL[0],:]=0
 
 
     maskleft=mask2[:,0:xMax-1]
@@ -90,6 +97,12 @@ def walls_X_Detection(mask,mask2):
     LeftWall2[whereLeft[0],:]=np.tile(whereLeft[1]+1, (xMax,1)).transpose()
     whereRight=np.where(detect==1)
     RightWall2[whereRight[0],:]=np.tile(whereRight[1], (xMax,1)).transpose()
+    
+    indexOpenR2=np.where(mask2[:,xMax-1]!=0)
+    RightWall2[indexOpenR2[0],:]=xMax-1
+    indexOpenL2=np.where(mask2[:,0]!=0)
+    LeftWall2[indexOpenL2[0],:]=0
+
     
     return LeftWall,LeftWall2,RightWall,RightWall2
     
@@ -133,8 +146,8 @@ def coupled_mapping(X,Y,Pi,Pj,mask,field):
     x=X[0,:]
     NewField=np.zeros(field.shape)
     
-    for j in y:
-        for i in x:
+    for j in np.arange(Y.shape[0]):
+        for i in np.arange(Y.shape[1]):
             if mask[j,i] != 0.:
                 decI,entI=math.modf(Pi[j,i])#decimal part , integer part
                 decI = np.abs(decI)
@@ -169,8 +182,8 @@ def mapping_X_axis(X,Y,Pi,mask,field):
     y=Y[:,0]
     x=X[0,:]
     NewField=np.zeros(field.shape)
-    for j in y:
-        for i in x:
+    for j in np.arange(Y.shape[0]):
+        for i in np.arange(Y.shape[1]):
             if mask[j,i] != 0.:
                 decI,entI=math.modf(Pi[j,i])#decimal part , integer part
                 decI = np.abs(decI)
@@ -183,6 +196,7 @@ def mapping_X_axis(X,Y,Pi,mask,field):
                 Ptot = p00+p01
                 p00 = p00/Ptot
                 p01 = p01/Ptot
+                
 
                 
                 NewField[j,newPosI]= NewField[j,newPosI] + field[j,i] * p00
@@ -195,8 +209,8 @@ def mapping_Y_axis(X,Y,Pj,mask,field):
     y=Y[:,0]
     x=X[0,:]
     NewField=np.zeros(field.shape)
-    for j in y:
-        for i in x:
+    for j in np.arange(Y.shape[0]):
+        for i in np.arange(Y.shape[1]):
             if mask[j,i] != 0.:
                 
                 decJ,entJ=math.modf(Pj[j,i])#decimal part , integer part
@@ -211,7 +225,7 @@ def mapping_Y_axis(X,Y,Pj,mask,field):
                 p00 = p00/Ptot
                 p10 = p10/Ptot
                 
-                
+                print i , newPosJ, newPosNextJ
                 
                 NewField[newPosJ,i]= NewField[newPosJ,i] + field[j,i] * p00
                 NewField[newPosNextJ,i]= NewField[newPosNextJ,i] + field[j,i] * p10
