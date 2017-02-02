@@ -103,3 +103,4 @@ imgplot = plt.imshow(NewIMG2[:,:]*mask2,interpolation='nearest')
 plt.show()
 
 
+

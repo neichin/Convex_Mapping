@@ -229,3 +229,20 @@ def mapping_Y_axis(X,Y,Pj,mask,field):
                 NewField[newPosNextJ,i]= NewField[newPosNextJ,i] + field[j,i] * p10
         
     return NewField
+    
+def smoothField_5points(field):
+    fieldHalo=np.zeros((field.shape[0]+2,field.shape[1]+2))
+    fieldHalo[1:field.shape[0]+1,1:field.shape[1]+1]=field
+    xMax=fieldHalo.shape[1]
+    yMax=fieldHalo.shape[0]
+    
+    maskup=fieldHalo[2:yMax,1:xMax-1]
+    maskdown=fieldHalo[0:yMax-2,1:xMax-1]
+    
+    maskleft=fieldHalo[1:yMax-1,0:xMax-2]
+    maskright=fieldHalo[1:yMax-1,2:xMax]
+    
+    maskSmooth = (fieldHalo[1:yMax-1,1:xMax-1] + maskup + maskdown + maskleft + maskright)/5
+    #Think about make it conservative here. add the residual field of the extra halo rows and columns
+    
+    return maskSmooth

@@ -25,8 +25,16 @@ MeltRate = MeltRate * (MeltRate<1e10)
 XMR, YMR = np.meshgrid(x,y)
 
 
+infLimit=200000.
+supLimit=480000
+xG=np.arange(start=infLimit,stop=supLimit,step=500)
+yG=np.arange(start=0,stop=80500,step=500)
+
+X, Y = np.meshgrid(xG,yG)
+
+############### MASK GL 1
 reader = vtk.vtkXMLPUnstructuredGridReader()
-path='/Users/imerino/Documents/These/MISMIP+/Occigen/Test500m_Schoof_SSAStar/Ice1r/ice1r0001.pvtu'
+path='/Users/imerino/Documents/These/MISMIP+/Occigen/Test500m_Schoof_SSAStar/Ice1r/ice1r0002.pvtu'
 reader.SetFileName(path)
 reader.Update()
 output=reader.GetOutput()
@@ -35,30 +43,43 @@ PointData=output.GetPointData()
 numArrays=PointData.GetNumberOfArrays()
 GL=vtk_to_numpy(PointData.GetArray(0))
 
-infLimit=200000.
-supLimit=480000
-xG=np.arange(start=infLimit,stop=supLimit,step=500)
-yG=np.arange(start=0,stop=80500,step=500)
-
-X, Y = np.meshgrid(xG,yG)
-
 indexX=np.where(Coords[:,0]>=infLimit)
 index2=np.where(Coords[indexX[0],0]<=supLimit)
 
 indexDef=indexX[0][index2]
 
 GLGrid = griddata((Coords[indexDef,0],Coords[indexDef,1]), GL[indexDef], (X, Y), method='nearest')
+
+GLGrid = -1 * GLGrid *(GLGrid<0.)
+
+
+############### MASK GL 2
+
+reader = vtk.vtkXMLPUnstructuredGridReader()
+path='/Users/imerino/Documents/These/MISMIP+/Occigen/Test500m_Schoof_SSAStar/Ice1r/ice1r0004.pvtu'
+reader.SetFileName(path)
+reader.Update()
+output=reader.GetOutput()
+Coords=vtk_to_numpy(output.GetPoints().GetData())
+PointData=output.GetPointData()
+numArrays=PointData.GetNumberOfArrays()
+GL2=vtk_to_numpy(PointData.GetArray(0))
+
+GLGrid2 = griddata((Coords[indexDef,0],Coords[indexDef,1]), GL2[indexDef], (X, Y), method='nearest')
+
+GLGrid2 = -1 * GLGrid2 *(GLGrid2<0.)
+
+### MRates
+
 MRInterpFunc = interp2d(x,y, MeltRate, kind='linear')
 
 MRGrid = MRInterpFunc(xG,yG)
 
-Mask1=1*(MRGrid!=0)
 
-GLGrid = -1 * GLGrid *(GLGrid<0.)
+Mask1=1*(GLGrid!=0)
 
 plt.figure()
-imgplot = plt.imshow(GLGrid,interpolation='nearest')
-
+imgplot = plt.imshow(GLGrid2,interpolation='nearest')
 
 plt.figure()
 
@@ -75,7 +96,7 @@ plt.show()
 maskExtraHalo=np.zeros((GLGrid.shape[0]+2,GLGrid.shape[1]+2))
 
 mask2=np.array(maskExtraHalo)
-mask2[1:GLGrid.shape[0]+1,1:GLGrid.shape[1]+1]=GLGrid
+mask2[1:GLGrid.shape[0]+1,1:GLGrid.shape[1]+1]=GLGrid2
 
 mask=np.array(maskExtraHalo)
 mask[1:GLGrid.shape[0]+1,1:GLGrid.shape[1]+1]=Mask1
@@ -122,11 +143,20 @@ Pj=get_translation_Y_axis(YHalo,YI1,YI2,Omega1,Omega2)
 NewIMG2=mapping_Y_axis(XHalo,YHalo,Pj,mask_X,NewIMG)
 
 
-
 plt.figure()
 imgplot = plt.imshow(data[:,:]*mask,interpolation='nearest')
 
 plt.figure()
 imgplot = plt.imshow(NewIMG2[:,:]*mask2,interpolation='nearest')
 
+
+maskSmooth=smoothField_5points(NewIMG2)
+maskSmooth=smoothField_5points(maskSmooth)
+maskSmooth=smoothField_5points(maskSmooth)
+maskSmooth=smoothField_5points(maskSmooth)
+
+plt.figure()
+imgplot = plt.imshow(maskSmooth[:,:],interpolation='nearest')
 plt.show()
+
+np.sum(maskSmooth)
